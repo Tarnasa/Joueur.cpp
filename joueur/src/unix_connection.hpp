@@ -1,11 +1,12 @@
 #ifndef UNIX_CONNECTION_HPP
 #define UNIX_CONNECTION_HPP
 
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <errno.h>
 #include <netdb.h>
-#include <unistd.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <string>
 #include <array>
@@ -116,6 +117,9 @@ public:
       while(split_point == std::string::npos)
       {
          const auto received = recv(sock_, read_buffer.data(), read_buffer.size(), 0);
+         if(received == -1 && errno == EINTR) {
+            continue;
+         }
          if(received == -1)
          {
             throw Communication_error("Receiving data failed.");
